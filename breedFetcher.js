@@ -1,20 +1,18 @@
 const client = require('request');
-const args = process.argv;
-const breedName = args.slice(2);
 
 // Make an http request and wait for the response.
-const pageFetcher = (url) => {
+const fetchBreedDescription = function(breed, functionToRunWhenThingsAreDone) {
+  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breed}`;
   client.get(url, (error, response) => {
     const body = JSON.parse(response.body)[0];
-    if (error) {
-      console.log(error);
-      return;
-    } else if (body === undefined) {
-      console.log("Breed not found: " + breedName);
+    let desc;
+    if (body === undefined) {
+      error = "Breed not found: " + breed;
     } else {
-      (response.statusCode !== 200) ? console.log('Status Code: ', response.statusCode, ` (See https://http.cat/${response.statusCode} for more info)`) : console.log(body["description"]);
+      desc = (response.statusCode !== 200) ? `Status Code: ${response.statusCode}, (See https://http.cat/${response.statusCode} for more info)` : body["description"];
     }
+    functionToRunWhenThingsAreDone(error, desc);
   });
 };
 
-pageFetcher('https://api.thecatapi.com/v1/breeds/search?q=' + breedName);
+module.exports = { fetchBreedDescription };
